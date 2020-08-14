@@ -31,10 +31,10 @@ void RestServer::reset() {
   bufferIndex_ = 0;
 }
 
-void RestServer::addRoute(char * method, char * route, void (*f)(char * params) ) {
-  // memcpy(routes_[routesIndex_].name, route, strlen(route)+1);
+void RestServer::addRoute(const char * method, const char * name,
+    void (*f)(const char * params) ) {
   routes_[routesIndex_].method   = method;
-  routes_[routesIndex_].name     = route;
+  routes_[routesIndex_].name     = name;
   routes_[routesIndex_].callback = f;
   
   // DLOG( "Route added:" );
@@ -42,14 +42,14 @@ void RestServer::addRoute(char * method, char * route, void (*f)(char * params) 
   routesIndex_++;
 }
 
-void RestServer::addToBuffer(char * value) {
+void RestServer::addToBuffer(const char * value) {
   for (int i = 0; i < strlen(value); i++){
     buffer_[bufferIndex_+i] = value[i];  
   }
   bufferIndex_ = bufferIndex_ + strlen(value);
 }
 
-void RestServer::addData(char* name, char * value) {
+void RestServer::addData(const char* name, const char * value) {
   char bufferAux[255] = {0};
   uint16_t idx = 0;
 
@@ -73,17 +73,15 @@ void RestServer::addData(char* name, char * value) {
 }
 
 // Add to output buffer_
-#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(ESP8266) || defined(CORE_WILDFIRE)
-void RestServer::addData(char* name, String& value){
+void RestServer::addData(const char* name, String& value){
   for (int i = 0; i < value.length(); i++){
     buffer_[bufferIndex_+i] = value[i];  
   }
   bufferIndex_ = bufferIndex_ + value.length();
 }
-#endif
 
 // Add to output buffer_
-void RestServer::addData(char* name, uint16_t value){
+void RestServer::addData(const char* name, uint16_t value){
   char number[10];
   itoa(value,number,10);
   
@@ -91,22 +89,20 @@ void RestServer::addData(char* name, uint16_t value){
 }
 
 // Add to output buffer_
-void RestServer::addData(char* name, int value){
+void RestServer::addData(const char* name, int value){
   char number[10];
   itoa(value,number,10);
   
   addData(name, number);
 }
 
-// Add to output buffer_ (Mega & ESP only)
-// #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(ESP8266) || defined(CORE_WILDFIRE)
-void RestServer::addData(char* name, float value){
+// Add to output buffer_
+void RestServer::addData(const char* name, float value){
   char number[10];
   dtostrf(value, 5, 2, number);
   
   addData(name, number);
 }
-// #endif
 
 // Send the HTTP response for the client
 void RestServer::send(uint8_t chunkSize, uint8_t delayTime) {
@@ -210,13 +206,13 @@ void RestServer::check() {
 
   for(int i = 0; i < routesIndex_; i++) {
       // Check if the routes names matches
-      if(strncmp( route, routes_[i].name, sizeof(routes_[i].name) ) != 0)
+      if (strcmp(route, routes_[i].name) != 0)
         continue;
 
       // Check if the HTTP METHOD matters for this route
-      if(strncmp( routes_[i].method, "*", sizeof(routes_[i].method) ) != 0) {
+      if (strcmp(routes_[i].method, "*") != 0) {
         // If it matters, check if the methods matches
-        if(strncmp( method, routes_[i].method, sizeof(routes_[i].method) ) != 0)
+        if (strcmp(method, routes_[i].method) != 0)
           continue;
       }
 

@@ -4,13 +4,13 @@
 // Include Arduino header
 #include "Arduino.h"
 #include "Log.h"
-#include <UIPEthernet.h>
+#include <Ethernet.h>
 #include "RestSettings.h"
 
 struct Routes {
-  char * method;
-  char * name;
-  void (*callback)(char * params);
+  const char * method;
+  const char * name;
+  void (*callback)(const char * params);
 };
 
 class RestServer {
@@ -19,13 +19,13 @@ public:
   
   void run();
   
-  void addRoute(char * method, char * route, void (*f)(char *));
+  void addRoute(const char * method, const char * name, void (*f)(const char *));
   
-  void addData(char* name, String& value);
-  void addData(char* name, uint16_t value);
-  void addData(char* name, int value);
-  void addData(char* name, float value);
-  void addData(char* name, char* value);
+  void addData(const char* name, String& value);
+  void addData(const char* name, uint16_t value);
+  void addData(const char* name, int value);
+  void addData(const char* name, float value);
+  void addData(const char* name, const char* value);
 
 private:
   Routes routes_[ROUTES_TOTAL];
@@ -38,7 +38,7 @@ private:
   
   void check();
   void reset();
-  void addToBuffer(char * value);
+  void addToBuffer(const char * value);
   void send(uint8_t chunkSize, uint8_t delayTime);
 };
 
