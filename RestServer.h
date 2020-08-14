@@ -3,7 +3,6 @@
 
 // Include Arduino header
 #include "Arduino.h"
-#include "Log.h"
 #include <Ethernet.h>
 #include "RestSettings.h"
 

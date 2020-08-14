@@ -36,9 +36,7 @@ void RestServer::addRoute(const char * method, const char * name,
   routes_[routesIndex_].method   = method;
   routes_[routesIndex_].name     = name;
   routes_[routesIndex_].callback = f;
-  
-  // DLOG( "Route added:" );
-  // DLOG( routes_[routesIndex_].name );
+
   routesIndex_++;
 }
 
@@ -124,7 +122,6 @@ void RestServer::send(uint8_t chunkSize, uint8_t delayTime) {
     memcpy(bufferAux, buffer_ + i*chunkSize, chunkSize);
     bufferAux[chunkSize] = '\0';
 
-    // DLOGChar(bufferAux);
     client_.print(bufferAux);
 
     // Wait for client_ to get data
@@ -152,7 +149,6 @@ void RestServer::check() {
   char c;
   while ( client_.connected() && client_.available() ) {
     c = client_.read();
-    // DLOGChar(c);
 
     // Start end of line process ////////////////
     // if you've gotten to the end of the line (received a newline
@@ -217,9 +213,6 @@ void RestServer::check() {
       }
 
       // Route callback (function)
-      // DLOG(route);
       routes_[i].callback(query);
-      LOG("Route callback!");
   }
-
 }
