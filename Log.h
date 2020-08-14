@@ -11,7 +11,7 @@
 #define LOGChar(var) ;
 #endif
 
-#ifndef N_DEBUG || N_LOG
+#ifndef N_DEBUG
 #define DLOG(var) Serial.println(var);
 #define DLOGChar(var) Serial.print(var);
 #else
