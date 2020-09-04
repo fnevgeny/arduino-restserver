@@ -9,7 +9,9 @@ void RestServer::run() {
     JSON_START();
     // Check the received request and process it
     check();
-    bufferIndex_--;
+    if (bufferIndex_ > 0) {
+      bufferIndex_--;
+    }
     JSON_CLOSE();
 
     // Send data for the client
@@ -33,6 +35,9 @@ void RestServer::reset() {
 
 void RestServer::addRoute(const char * method, const char * name,
     void (*f)(const char * params) ) {
+  if (routesIndex_ >= ROUTES_TOTAL) {
+    return;
+  }
   routes_[routesIndex_].method   = method;
   routes_[routesIndex_].name     = name;
   routes_[routesIndex_].callback = f;
@@ -41,60 +46,38 @@ void RestServer::addRoute(const char * method, const char * name,
 }
 
 void RestServer::addToBuffer(const char * value) {
-  for (int i = 0; i < strlen(value); i++){
-    buffer_[bufferIndex_+i] = value[i];  
+  if (strlen(value) + bufferIndex_ >= OUTPUT_BUFFER_SIZE) {
+    return;
   }
+  strcpy(buffer_ + bufferIndex_, value);
   bufferIndex_ = bufferIndex_ + strlen(value);
 }
 
+// Add to output buffer_
 void RestServer::addData(const char* name, const char * value) {
-  char bufferAux[255] = {0};
-  uint16_t idx = 0;
-
   // Format the data as:
   // "name":"value",
-  bufferAux[idx++] = '"';
-  for (int i = 0; i < strlen(name); i++){
-    bufferAux[idx++] = name[i];
-  }
-  bufferAux[idx++] = '"';
-
-  bufferAux[idx++] = ':';
-  bufferAux[idx++] = '"';
-  for (int i = 0; i < strlen(value); i++){
-    bufferAux[idx++] = value[i];  
-  }
-  bufferAux[idx++] = '"';
-  bufferAux[idx++] = ',';
-
-  addToBuffer(bufferAux);
+  addToBuffer("\"");
+  addToBuffer(name);
+  addToBuffer("\":\"");
+  addToBuffer(value);
+  addToBuffer("\",");
 }
 
-// Add to output buffer_
-void RestServer::addData(const char* name, String& value){
-  for (int i = 0; i < value.length(); i++){
-    buffer_[bufferIndex_+i] = value[i];  
-  }
-  bufferIndex_ = bufferIndex_ + value.length();
-}
-
-// Add to output buffer_
 void RestServer::addData(const char* name, uint16_t value){
   char number[10];
-  itoa(value,number,10);
+  itoa(value, number, 10);
   
   addData(name, number);
 }
 
-// Add to output buffer_
 void RestServer::addData(const char* name, int value){
   char number[10];
-  itoa(value,number,10);
+  itoa(value, number, 10);
   
   addData(name, number);
 }
 
-// Add to output buffer_
 void RestServer::addData(const char* name, float value){
   char number[10];
   dtostrf(value, 5, 2, number);
@@ -108,8 +91,10 @@ void RestServer::send(uint8_t chunkSize, uint8_t delayTime) {
   client_.println(HTTP_COMMON_HEADER);
 
   // Send all of it
-  if (chunkSize == 0)
+  if (chunkSize == 0) {
     client_.print(buffer_);
+    return;
+  }
 
   // Send chunk by chunk #####################################
 

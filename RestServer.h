@@ -20,7 +20,6 @@ public:
   
   void addRoute(const char * method, const char * name, void (*f)(const char *));
   
-  void addData(const char* name, String& value);
   void addData(const char* name, uint16_t value);
   void addData(const char* name, int value);
   void addData(const char* name, float value);
