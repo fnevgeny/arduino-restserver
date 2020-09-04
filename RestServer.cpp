@@ -27,7 +27,7 @@ void RestServer::run() {
 
 void RestServer::reset() {
   // Reset buffer
-  memset(&buffer_[0], 0, sizeof(buffer_));
+  memset(buffer_, 0, sizeof(buffer_));
 
   // Reset buffer index
   bufferIndex_ = 0;
@@ -96,21 +96,19 @@ void RestServer::send(uint8_t chunkSize, uint8_t delayTime) {
     return;
   }
 
-  // Send chunk by chunk #####################################
+  // Number of full chunks
+  uint8_t nchunks = bufferIndex_/chunkSize;
 
-  // Max iterations
-  uint8_t max = (int)(bufferIndex_/chunkSize) + 1;
-
-  // Send data
-  for (uint8_t i = 0; i < max; i++) {
-    char bufferAux[chunkSize+1];
-    memcpy(bufferAux, buffer_ + i*chunkSize, chunkSize);
-    bufferAux[chunkSize] = '\0';
-
-    client_.print(bufferAux);
+  // Send chunk by chunk
+  for (uint8_t i = 0; i < nchunks; i++) {
+    client_.write(buffer_ + i*chunkSize, chunkSize);
 
     // Wait for client_ to get data
     delay(delayTime);
+  }
+  // Anything that has been left..
+  if (nchunks*chunkSize < bufferIndex_) {
+    client_.print(buffer_ + nchunks*chunkSize);
   }
 }
 
